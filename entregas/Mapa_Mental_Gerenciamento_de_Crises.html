@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mapa Mental Gerenciamento de Crises</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: núcleo central em grade 3×3, oito ramos dispostos em sentido horário pela ordem das seções da apostila; no celular, coluna única. */
+:root{
+  --paper:#f4f6fa; --sheet:#ffffff; --ink:#18202e; --muted:#5a6578; --line:#cfd6e2; --hub:#0d2c56; --hubink:#ffffff; --warn:#a4400e; --warnbg:#fdf0e6;
+  --b1:#5b4a9e; --b2:#1f6f8b; --b3:#2d7a46; --b4:#9a6a00; --b5:#8a3d6e; --b6:#b0452a; --b7:#4d6a1f; --b8:#a12b38;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#10151e; --sheet:#171e2a; --ink:#e4e9f1; --muted:#9ba6b8; --line:#2c3748; --hub:#8db7f0; --hubink:#0c1422; --warn:#f0a070; --warnbg:#3a2418;
+    --b1:#a796f0; --b2:#6cc0dc; --b3:#78c98f; --b4:#e0b450; --b5:#df8cc0; --b6:#f08f74; --b7:#a6c56a; --b8:#f0848f; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#10151e; --sheet:#171e2a; --ink:#e4e9f1; --muted:#9ba6b8; --line:#2c3748; --hub:#8db7f0; --hubink:#0c1422; --warn:#f0a070; --warnbg:#3a2418;
+  --b1:#a796f0; --b2:#6cc0dc; --b3:#78c98f; --b4:#e0b450; --b5:#df8cc0; --b6:#f08f74; --b7:#a6c56a; --b8:#f0848f; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;margin:0}
+.page{max-width:1320px;margin:0 auto;padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.bar p{margin:0;color:var(--muted);font-size:.9rem}
+.bar .btns{display:flex;gap:8px;flex-wrap:wrap}
+button.tg{font:600 .85rem var(--body);color:var(--ink);background:var(--sheet);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer}
+button.tg:hover{border-color:var(--hub)}
+button:focus-visible,summary:focus-visible{outline:2px solid var(--hub);outline-offset:2px}
+.map{position:relative;display:grid;gap:22px;grid-template-columns:1fr 1fr 1fr;
+  grid-template-areas:"b1 b2 b3" "b8 hub b4" "b7 b6 b5";align-items:start}
+.wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.wires path{fill:none;stroke-width:2;stroke-dasharray:5 5;opacity:.55}
+.hub{grid-area:hub;align-self:center;justify-self:center;position:relative;z-index:1;background:var(--hub);color:var(--hubink);border-radius:50%;width:min(260px,100%);aspect-ratio:1;max-width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
+.hub h1{font:700 2rem/1 var(--display);text-transform:uppercase;letter-spacing:.5px;margin:0;text-wrap:balance}
+.hub span{font-size:.82rem;margin-top:8px;opacity:.85}
+.br{position:relative;z-index:1;min-width:0;background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:14px 14px 10px}
+.br h2{display:flex;align-items:center;gap:10px;margin:0 0 8px;font:700 1.3rem/1.1 var(--display);text-transform:uppercase;letter-spacing:.4px;color:var(--c);text-wrap:balance}
+.br h2 .n{flex:0 0 auto;width:28px;height:28px;border-radius:50%;background:var(--c);color:var(--sheet);display:flex;align-items:center;justify-content:center;font-size:1rem}
+.br .sec{font-size:.74rem;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:-4px 0 8px 38px}
+ul.t{list-style:none;margin:0;padding:0}
+ul.t ul.t{margin-left:7px;padding-left:12px;border-left:2px solid color-mix(in srgb,var(--c) 35%,transparent)}
+ul.t li{position:relative;padding:3px 0}
+ul.t ul.t>li::before{content:"";position:absolute;left:-12px;top:13px;width:9px;border-top:2px solid color-mix(in srgb,var(--c) 35%,transparent)}
+summary{cursor:pointer;list-style:none;font-weight:700;color:var(--ink)}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"";display:inline-block;width:0;height:0;border-left:6px solid var(--c);border-top:4px solid transparent;border-bottom:4px solid transparent;margin-right:7px;vertical-align:1px;transition:transform .15s}
+details[open]>summary::before{transform:rotate(90deg)}
+.k{font-weight:700}
+.d{color:var(--muted);font-weight:400}
+.leaf .k{color:var(--ink)}
+.warn{display:inline-block;font:700 .66rem var(--body);letter-spacing:.6px;text-transform:uppercase;color:var(--warn);background:var(--warnbg);border-radius:4px;padding:1px 5px;margin-left:4px;vertical-align:1px}
+.legend{margin-top:22px;display:flex;gap:8px;align-items:center;color:var(--muted);font-size:.85rem;flex-wrap:wrap}
+@media (max-width:960px){
+  .map{grid-template-columns:1fr;grid-template-areas:"hub" "b1" "b2" "b3" "b4" "b5" "b6" "b7" "b8"}
+  .wires{display:none}
+  .hub{width:220px}
+}
+@media (prefers-reduced-motion:reduce){summary::before{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="bar">
+    <p>Apostila “Gerenciamento de Crises” · CHS PMES 2026. Clique em um tópico para abrir ou fechar.</p>
+    <div class="btns">
+      <button class="tg" id="openAll" type="button">Expandir tudo</button>
+      <button class="tg" id="closeAll" type="button">Recolher tudo</button>
+    </div>
+  </div>
+  <div class="map" id="map">
+    <svg class="wires" id="wires" aria-hidden="true"></svg>
+    <div class="hub" id="hub"><h1>Gerenciamento de Crises</h1><span>CHS · PMES 2026</span></div>
+  </div>
+  <div class="legend"><span class="warn">Atenção</span> marca os pontos que mais confundem na prova.</div>
+</div>
+
+<script>
+(function(){
+// [rótulo, detalhe, filhos, atenção]
+var B=[
+{n:1,c:"--b1",t:"Introdução e histórico",s:"Seção 1",k:[
+ ["Base legal","art. 144, §5º da CF: à PM cabem a polícia ostensiva e a preservação da ordem pública"],
+ ["Chegada ao Brasil","meados dos anos 90, na linha do FBI",[
+   ["Delegado da PF","Roberto das Chagas Monteiro"],
+   ["Cap PMESP","Wanderley Mascarenhas de Souza"]]],
+ ["Casos que marcaram a doutrina","",[
+   ["Cerco de Waco (1993)","51 dias, 80 mortos"],
+   ["Columbine (1999)","dividiu o gerenciamento em estático (tradicional) e dinâmico (agressores solitários)"]]],
+ ["Casos históricos citados","",[
+   ["Munique 1972","16 mortos"],["Voo 648 EgyptAir","1985"],["Carandiru 1992","111 mortos"],
+   ["Eldorado dos Carajás","1996"],["CEPAIGO/Leonardo Pareja 1996","151 h",null,1],["Ônibus 174","2000"]]],
+ ["Marcos na PMES","",[
+   ["Cel Juarez Monteiro da Silva","primeiro a aplicar o gerenciamento de crises"],
+   ["1º Curso","BME, 2001"],["1º Manual capixaba","2021"]]],
+ ["Decreto nº 6396-R (06/05/2026)","cria a CIOE",[
+   ["CIOE","assume as crises e as alternativas táticas; o EAB (esquadrão antibombas) passa a integrá-la"],
+   ["BME","fica com choque e patrulhamento tático motorizado"],
+   ["Portaria 947-R/2022","onde se lê “Unidade de Missões Especiais”, entenda-se CIOE"]]]
+]},
+{n:2,c:"--b2",t:"Conceitos fundamentais",s:"Seção 2",k:[
+ ["Definições do FBI","",[
+   ["Crise","evento ou situação crucial que exige resposta especial da polícia para assegurar uma solução aceitável"],
+   ["Gerenciamento de crises","processo de identificar, obter e aplicar recursos para antecipação, prevenção e resolução de uma crise",null,1]]],
+ ["Agentes","",[
+   ["CEC","Causador do Evento Crítico; evita “bandido”, “sequestrador”, “tomador de refém”"],
+   ["Primeiro interventor","PM que primeiro se depara com a crise; adota as 5 medidas operacionais"],
+   ["Gerente emergencial","PM de serviço mais antigo presente; organiza o teatro de operações até a chegada da CIOE",null,1],
+   ["Gerente efetivo","PM mais antigo da CIOE presente; decide sobre as alternativas táticas",null,1]]],
+ ["Alternativas táticas","4: negociação, técnicas não letais, tiro de comprometimento e invasão tática; isoladas ou concomitantes"],
+ ["Teatro de operações (de fora para dentro)","",[
+   ["Perímetro tático externo","restringe o público; fora dele a circulação, inclusive da imprensa, é livre"],
+   ["Zona tampão","entre os perímetros: Posto de Comando, policiais não envolvidos diretamente, Bombeiros, SAMU"],
+   ["Perímetro tático interno","separa a zona estéril da zona tampão"],
+   ["Zona estéril","circunda o ponto crítico: poucos policiais envolvidos, CEC, reféns ou vítimas"],
+   ["Ponto crítico","onde está o CEC ou de onde vem a ameaça (inclusive explosivos)"]]],
+ ["Pessoas sob ameaça","",[
+   ["Refém","mantido para forçar exigências, sem vínculo afetivo com o CEC; “tomado” ou “sequestrado”",null,1],
+   ["Vítima","com vínculo afetivo ou emocional prévio (familiar, cônjuge, patrão)",null,1]]]
+]},
+{n:3,c:"--b3",t:"Doutrina",s:"Seção 3",k:[
+ ["3 características determinantes","",[
+   ["Imprevisibilidade",""],
+   ["Compressão de tempo","decisões céleres, sem pressa para resolver; não há prazo (Embaixada do Japão em Lima: 4 meses)",null,1],
+   ["Ameaça à vida","inclui a do próprio CEC"]]],
+ ["6 fatores adicionais","alta pressão psicológica · conflitos de competência · poder desestabilizador do clima de segurança · necessidade de muitos recursos (baixa probabilidade, graves consequências) · tendência à desordem · acompanhamento por autoridades, comunidade e mídia"],
+ ["Necessidades especiais","",[
+   ["Postura organizacional não rotineira","a que mais causa transtornos; única minimizável com treinamento"],
+   ["Planejamento analítico especial",""],["Considerações legais especiais",""]]],
+ ["3 objetivos (em ordem)","",[
+   ["1. Preservar vidas","primordial: reféns, vítimas, público, policiais e CEC"],
+   ["2. Aplicar a lei","sem fuga nem troca de reféns"],
+   ["3. Restabelecer a ordem",""]]],
+ ["Unidade de comando","só uma pessoa decide"],
+ ["Concessões","só o gerente efetivo decide, e só com as alternativas táticas presentes"],
+ ["3 critérios de decisão (FBI)","",[
+   ["Necessidade","é indispensável?"],["Validade de risco","vale a pena correr o risco?"],
+   ["Aceitabilidade","respaldo legal, moral e ético; a ética veda constrangimento interna corporis"]]],
+ ["13 tipos de crise (Manual PMES)","incluem tentativa de suicídio, explosivos, atirador/agressor ativo, “novo cangaço”, acidentes de grandes proporções"],
+ ["Tipologias do CEC","",[
+   ["Criminoso","crise circunstancial; maioria no Brasil; risco maior nos primeiros 15 a 45 min"],
+   ["Mentalmente perturbado","transtorno mental, abalo emocional súbito ou abuso não rotineiro de drogas; imprevisível"],
+   ["Terrorista","planeja, age em células, armas de grande letalidade, resiste à negociação"],
+   ["Presos rebelados","crises violentas; entendimento com a administração prisional"]]]
+]},
+{n:4,c:"--b4",t:"Alternativas táticas",s:"Seção 3",k:[
+ ["Ordem","do menor para o maior risco, mas não é obrigatório segui-la",null,1],
+ ["Negociação","principal; presente em todas as fases",[
+   ["Equipe","negociador principal, negociador secundário, anotador, líder, assessor logístico, psicólogo (desejável)"]]],
+ ["Técnicas não letais","",[
+   ["Quando","a negociação falha, mas se quer o CEC vivo"],
+   ["Visa","imobilização, não neutralização",null,1],
+   ["Princípios","legalidade, necessidade, proporcionalidade, conveniência"]]],
+ ["Tiro de comprometimento","",[
+   ["Quem","atirador policial de precisão; antes de tudo, colhe informações"],
+   ["Decisão","gerente efetivo autoriza; o atirador decide o momento do disparo",null,1]]],
+ ["Invasão tática","",[
+   ["Posição","última opção, maior risco"],
+   ["Quando","risco substancial de morte ou ferimento grave do refém"],
+   ["Base","surpresa, agressividade, rapidez, ação de grupo"]]],
+ ["Equipes responsáveis","",[
+   ["Equipe de negociação","negociação"],["Equipe tática","não letais e invasão"],["Atiradores de precisão","tiro de comprometimento"]]]
+]},
+{n:5,c:"--b5",t:"Aspectos operacionais",s:"Seção 4",k:[
+ ["Organização do cenário","cabe inicialmente ao gerente emergencial"],
+ ["Posto de Comando","",[
+   ["Local","zona tampão"],["Função","sede da autoridade"],
+   ["Atividades","colhe, trabalha e aplica informações; coordena; dá suporte logístico"]]],
+ ["Imprensa","",[
+   ["Não afastar","do processo"],
+   ["Coletivas","local perto do perímetro externo e um policial designado"],
+   ["Sem promessas","nada de “todos sairão bem”"],
+   ["Reforçar","o risco e a complexidade"],
+   ["Preservar","a vida pessoal do CEC e dos reféns"]]]
+]},
+{n:6,c:"--b6",t:"Primeira intervenção",s:"Seção 5",k:[
+ ["5 medidas operacionais","simultâneas sempre que possível",[
+   ["1. Identificar","anotar tudo; viatura longe e abrigo; entrevistar liberados; auxiliar anota em ordem cronológica"],
+   ["2. Acionar apoio","ordinário e especializado via CIODES/COPOM; chamar o CPU; evitar tumulto de viaturas"],
+   ["3. Conter","CEC no mesmo local, barreiras físicas e verbais; nunca trocar de lugar com refém"],
+   ["4. Isolar","cortar contato externo; insistente responde por desobediência; não entregar celular; não trazer quem o CEC pedir"],
+   ["5. Contato sem concessões","o primeiro interventor não negocia; só um policial fala; não dizer posto/graduação, sem mentir",null,1]]],
+ ["Palavras proibidas","morte, invasão, grupo de intervenção, sniper, rendição, refém"],
+ ["14 ações básicas","",[
+   ["Objetivo principal","ganhar tempo"],
+   ["Fazer","estabilizar e conter · escolher o momento do contato · deixar o CEC falar · ser honesto · abrandar as exigências"],
+   ["Nunca","oferecer nada (nem água nem cigarro) · dizer “não” diretamente · estabelecer ou aceitar prazo final · trocar reféns"],
+   ["Evitar","focar nos reféns ou dizer “refém” · sugestões alternativas · envolver quem não é policial · contato cara a cara"],
+   ["Interventor desacreditado","substituído imediatamente",null,1]]],
+ ["Síndrome de Estocolmo","",[
+   ["Origem","assalto em Estocolmo (1973), 131 h; termo de Harvey Schlossberg",null,1],
+   ["Consolidador","o tempo"],
+   ["Efeito","protege os reféns; a troca de reféns quebra essa proteção"]]],
+ ["Caminho da mudança no CEC","empatia → vínculo (rapport) → influência → mudança comportamental; empatia não é simpatia, piedade nem concordância"],
+ ["Transição para a negociação","não pode ser abrupta; se o interventor vai bem, pode continuar"],
+ ["Sinais de progresso","voz mais baixa · do emocional para o racional · CEC revela dados pessoais · prazos vencem sem incidente · reféns libertados"]
+]},
+{n:7,c:"--b7",t:"Crises suicidas",s:"Seção 6",k:[
+ ["Sinais de alerta","",[
+   ["Sem exigência de fuga",""],["“Testamento oral”",""],
+   ["Prazo para a própria morte","",null,1],["Pede para ser morto","“suicídio by police”"]]],
+ ["Chaves de intervenção","",[
+   ["Explorar sentimentos","deixar a ira ser dirigida ao policial"],
+   ["Falar abertamente","da irrevogabilidade da morte"],
+   ["Pedir","que a pessoa descreva o suicídio"],
+   ["Ganhar tempo",""],
+   ["Mostrar","que o suicídio é só uma das muitas alternativas"]]]
+]},
+{n:8,c:"--b8",t:"Atirador ou agressor ativo",s:"Seção 7 · sistema dinâmico",k:[
+ ["Objetivo","reduzir ao máximo o número de vítimas; não faz sentido montar cerco e esperar contato"],
+ ["Definições","",[
+   ["Atirador ativo (FEMA)","armado e ativamente engajado em matar em espaço confinado ou área povoada; usa arma de fogo"],
+   ["Agressor ativo","usa outros meios; ambos são “agressores solitários”"]]],
+ ["Prioridade de vidas","",[
+   ["CEC ainda fazendo vítimas","vítimas → policiais → CEC; ação rápida e direcionada, sem aguardar especializadas",null,1],
+   ["CEC contido e isolado","policiais → CEC; evita-se entrar, aguardam-se especializadas; progressão lenta"]]],
+ ["Objetivos da intervenção","parar a matança · neutralizar o agressor · definir prioridades médicas · retirar os feridos"],
+ ["Zonas","",[
+   ["Verde","sem possibilidade imediata de confronto"],["Amarela","há possibilidade de confronto"],["Vermelha","perigo real ou confronto em curso"]]],
+ ["Conduta","ir em direção ao som dos disparos · não se aproximar do agressor neutralizado (explosivos) · quem sai, sai com as mãos para cima (bolsão para busca) · todo o cenário é local de crime"]
+]}
+];
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");}
+function node(x){
+  var label='<span class="k">'+esc(x[0])+'</span>'+(x[3]?'<span class="warn">Atenção</span>':'')+(x[1]?' <span class="d">· '+esc(x[1])+'</span>':'');
+  if(x[2]&&x[2].length){ return '<li><details open><summary>'+label+'</summary><ul class="t">'+x[2].map(node).join("")+'</ul></details></li>'; }
+  return '<li class="leaf">'+label+'</li>';
+}
+var map=document.getElementById("map"), html="";
+B.forEach(function(b){
+  html+='<section class="br" id="b'+b.n+'" style="grid-area:b'+b.n+';--c:var('+b.c+')"><h2><span class="n">'+b.n+'</span>'+esc(b.t)+'</h2><div class="sec">'+esc(b.s)+'</div><ul class="t">'+b.k.map(node).join("")+'</ul></section>';
+});
+map.insertAdjacentHTML("beforeend",html);
+
+function wires(){
+  var svg=document.getElementById("wires"), hub=document.getElementById("hub");
+  if(getComputedStyle(svg).display==="none"){svg.innerHTML="";return;}
+  var m=map.getBoundingClientRect(), h=hub.getBoundingClientRect();
+  var hx=h.left+h.width/2-m.left, hy=h.top+h.height/2-m.top, out="";
+  B.forEach(function(b){
+    var el=document.getElementById("b"+b.n).querySelector("h2 .n").getBoundingClientRect();
+    var x=el.left+el.width/2-m.left, y=el.top+el.height/2-m.top;
+    var mx=(hx+x)/2;
+    out+='<path d="M'+hx+' '+hy+' C'+mx+' '+hy+' '+mx+' '+y+' '+x+' '+y+'" style="stroke:var('+b.c+')"/>';
+  });
+  svg.innerHTML=out;
+}
+function setAll(open){ map.querySelectorAll("details").forEach(function(d){d.open=open;}); wires(); }
+document.getElementById("openAll").addEventListener("click",function(){setAll(true);});
+document.getElementById("closeAll").addEventListener("click",function(){setAll(false);});
+map.addEventListener("toggle",wires,true);
+window.addEventListener("resize",wires);
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(wires);
+wires();
+})();
+</script>
+</body>
+</html>
