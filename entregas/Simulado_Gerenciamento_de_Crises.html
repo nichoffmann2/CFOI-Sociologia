@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulado – Gerenciamento de Crises</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --card: #ffffff; --text: #1d2330; --muted: #5b6475;
+    --line: #dde1e8; --accent: #1f4e8c; --accent-soft: #e6eef9;
+    --ok: #1d7a46; --ok-soft: #e3f4ea; --bad: #b3261e; --bad-soft: #fbe7e6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12151b; --card: #1b2029; --text: #e6e9ef; --muted: #9aa3b5;
+      --line: #2c3340; --accent: #7fb0ff; --accent-soft: #1e2b40;
+      --ok: #5fd08f; --ok-soft: #173325; --bad: #ff8a80; --bad-soft: #3a1d1c;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header {
+    position: sticky; top: 0; z-index: 10; background: var(--card);
+    border-bottom: 1px solid var(--line); padding: 12px 16px;
+  }
+  .head-inner { max-width: 860px; margin: 0 auto; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .head-inner h1 { font-size: 1.05rem; margin: 0; flex: 1 1 auto; }
+  .stat { font-size: .9rem; color: var(--muted); white-space: nowrap; }
+  .bar { height: 4px; background: var(--line); }
+  .bar > div { height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+  main { max-width: 860px; margin: 0 auto; padding: 20px 16px 120px; }
+  .intro { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin-bottom: 20px; }
+  .intro p { margin: .3rem 0; color: var(--muted); font-size: .95rem; }
+  .q { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; }
+  .q h2 { font-size: .85rem; text-transform: uppercase; letter-spacing: .04em; color: var(--accent); margin: 0 0 6px; }
+  .q .stem { margin: 0 0 12px; }
+  .q .stem ol, .q .stem ul { margin: 6px 0; padding-left: 22px; }
+  .opt {
+    display: flex; gap: 10px; align-items: flex-start; padding: 9px 11px; margin: 6px 0;
+    border: 1px solid var(--line); border-radius: 8px; cursor: pointer;
+  }
+  .opt:hover { border-color: var(--accent); }
+  .opt input { margin-top: 4px; accent-color: var(--accent); }
+  .opt .letter { font-weight: 700; min-width: 1.2em; }
+  .opt.sel { background: var(--accent-soft); border-color: var(--accent); }
+  .locked .opt { cursor: default; }
+  .locked .opt:hover { border-color: var(--line); }
+  .opt.correct { background: var(--ok-soft); border-color: var(--ok); }
+  .opt.wrong { background: var(--bad-soft); border-color: var(--bad); }
+  .q.res-ok { border-left: 5px solid var(--ok); }
+  .q.res-bad { border-left: 5px solid var(--bad); }
+  .expl { display: none; margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: var(--bg); font-size: .93rem; }
+  .locked .expl { display: block; }
+  .tag { font-weight: 700; }
+  .tag.ok { color: var(--ok); } .tag.bad { color: var(--bad); }
+  footer {
+    position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
+    border-top: 1px solid var(--line); padding: 12px 16px;
+  }
+  .foot-inner { max-width: 860px; margin: 0 auto; display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  button {
+    font: inherit; font-weight: 600; padding: 10px 18px; border-radius: 8px; border: 1px solid var(--accent);
+    background: var(--accent); color: #fff; cursor: pointer;
+  }
+  @media (prefers-color-scheme: dark) { button { color: #0d1420; } }
+  button[disabled] { opacity: .45; cursor: not-allowed; }
+  button.ghost { background: transparent; color: var(--accent); }
+  #result { display: none; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px; margin-bottom: 20px; }
+  #result h2 { margin: 0 0 6px; font-size: 1.2rem; }
+  .score { font-size: 2rem; font-weight: 800; }
+  table { border-collapse: collapse; width: 100%; margin-top: 12px; font-size: .92rem; }
+  th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: center; }
+  th { background: var(--bg); }
+  td.ok { color: var(--ok); font-weight: 700; } td.bad { color: var(--bad); font-weight: 700; }
+  .gab-wrap { overflow-x: auto; }
+  @media print { header, footer { position: static; } .opt input { display: none; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="head-inner">
+    <h1>Simulado – Gerenciamento de Crises (CHS 2026)</h1>
+    <span class="stat" id="count">0/20 respondidas</span>
+    <span class="stat" id="timer">⏱ 00:00</span>
+  </div>
+</header>
+<div class="bar"><div id="prog"></div></div>
+
+<main>
+  <div class="intro">
+    <strong>Instruções</strong>
+    <p>20 questões objetivas, com base na Apostila de Gerenciamento de Crises do CHS 2026 (PMES). Cada uma tem uma única alternativa correta.</p>
+    <p>O gabarito e os comentários só aparecem depois que você responder as 20 questões e clicar em <strong>Finalizar simulado</strong>.</p>
+  </div>
+  <div id="result"></div>
+  <div id="quiz"></div>
+</main>
+
+<footer>
+  <div class="foot-inner">
+    <span class="stat" id="hint">Responda todas as questões para finalizar.</span>
+    <div>
+      <button class="ghost" id="restart" type="button" style="display:none">Refazer</button>
+      <button id="finish" type="button" disabled>Finalizar simulado</button>
+    </div>
+  </div>
+</footer>
+
+<script>
+const Q = [
+{ s: "Sobre as alterações decorrentes do Decreto nº 6396-R/2026 e a leitura das normas internas da PMES, assinale a alternativa correta.",
+  o: ["O BME continua responsável pelas alternativas táticas do gerenciamento de crises; a CIOE se limita ao combate ao crime organizado.",
+      "A Portaria 947-R/2022 atribuiu expressamente ao Batalhão de Missões Especiais o atendimento de incidentes críticos, e por isso precisa ser revogada.",
+      "Onde a Portaria 947-R/2022 fala em “Unidade de Missões Especiais”, deve-se entender, para fins operacionais imediatos, a CIOE. O BME passa a responder pelas operações de choque e pelo patrulhamento tático motorizado.",
+      "O EAB continua no efetivo do BME, de modo que os POPs sobre bombas e explosivos não precisam ser atualizados.",
+      "A Portaria 1.172-R/2022 não precisa de adequação alguma, pois já previa a criação da CIOE."],
+  c: 2, e: "Item 1.2.1: a Portaria 947-R não nomeia o BME, fala apenas em “Unidade de Missões Especiais”, e deve ser lida hoje como CIOE. O EAB compõe a CIOE, o que obriga a atualizar os POPs. A Portaria 1.172-R precisa ajustar o item II do art. 5º. O BME fica com choque e patrulhamento tático motorizado." },
+
+{ s: "Uma guarnição de área atende a um roubo com refém. Um 2º Sargento, policial de serviço mais antigo presente, organiza o teatro de operações. Quando a CIOE chega ao local, segundo a apostila:",
+  o: ["o Sargento entrega toda a ocorrência e retira seu efetivo do teatro de operações para não haver duplicidade de comando.",
+      "o Sargento repassa as informações essenciais ao gerente efetivo e, se necessário, permanece no local comandando seu efetivo, que pode ser usado, entre outras funções, para estabelecer os perímetros táticos.",
+      "o Sargento continua como gerente da crise até a chegada do Comandante da Unidade de área, já que a CIOE presta apenas apoio técnico.",
+      "o gerente efetivo será o oficial mais antigo presente no local, seja da CIOE ou da unidade de área.",
+      "o Sargento passa a acumular a função de negociador principal, por já ter feito contato com o CEC."],
+  c: 1, e: "Itens 2.6 e 2.7: o gerente emergencial repassa as informações ao gerente efetivo (o policial mais antigo da CIOE presente) e pode permanecer comandando seu efetivo subordinado, empregado, por exemplo, nos perímetros." },
+
+{ s: "Depois que as equipes especializadas são acionadas para uma crise, a apostila afirma que:",
+  o: ["acionada a CIOE, a ocorrência passa automaticamente a ser dela, haja ou não necessidade de uso da força.",
+      "a ocorrência passa à Polícia Civil sempre que houver reféns, nos termos da Portaria 08-R/2021.",
+      "os policiais da unidade de área devem ser dispensados assim que as equipes especializadas chegam, para evitar tumulto.",
+      "o primeiro interventor deve ser obrigatoriamente substituído pelo negociador da CIOE no momento em que a equipe chega.",
+      "se não houver necessidade de uso da força, a ocorrência continua sendo da Unidade responsável pela área, e cabe à CIOE prestar auxílio para um desfecho aceitável."],
+  c: 4, e: "Item 5.1.2: “caso não haja necessidade de uso da força, a ocorrência continuará sendo da Unidade responsável pela área, cabendo à CIOE apenas prestar auxílio”. Os policiais da área continuam em missões específicas, e um primeiro interventor que esteja indo bem pode ser mantido no contato." },
+
+{ s: "Um comandante declara à imprensa: “A doutrina impõe compressão de tempo, por isso vamos encerrar esta crise o quanto antes”. À luz da apostila, essa fala está:",
+  o: ["equivocada, porque a compressão de tempo diz respeito à rapidez das decisões, e não à pressa em resolver a ocorrência, que não tem prazo para terminar.",
+      "correta, pois as crises devem ser encerradas antes que a mídia passe a pressionar o gerente.",
+      "correta, pois a compressão de tempo exige que a crise seja solucionada no menor prazo possível.",
+      "equivocada, pois a compressão de tempo é característica exclusiva do sistema dinâmico (atirador ativo).",
+      "equivocada, pois a compressão de tempo não é característica determinante, e sim fator secundário, como o conflito de competência."],
+  c: 0, e: "Item 3.1: a compressão de tempo exige decisões rápidas, mas “não há um prazo para se resolver uma ocorrência de crise policial” (exemplo da embaixada do Japão em Lima, que durou cerca de quatro meses). É uma das três características determinantes, ao lado da imprevisibilidade e da ameaça à vida." },
+
+{ s: "Em um assalto frustrado a uma empresa, o CEC, ex-funcionário demitido no mês anterior, mantém sob a mira de arma o dono da empresa (seu ex-patrão) e um cliente que nunca tinha visto. Pelos conceitos da apostila, o dono e o cliente são, respectivamente:",
+  o: ["refém e refém, porque a tipologia do CEC é “criminoso”.",
+      "refém e vítima.",
+      "vítima e vítima, porque ambos estão no ponto crítico.",
+      "vítima e refém.",
+      "refém sequestrado e refém tomado."],
+  c: 3, e: "Itens 2.14 e 2.15: vítima é quem tem vínculo afetivo ou emocional anterior com o CEC, inclusive vínculo de trabalho (patrão e empregado). Refém é quem não tem vínculo algum e é mantido para garantir ou forçar exigências." },
+
+{ s: "Sobre a organização do cenário e os perímetros táticos, assinale a correta.",
+  o: ["O Posto de Comando fica na zona tampão, onde também podem estar policiais não envolvidos diretamente e o apoio de outras instituições; a entrada da mídia para briefings pode ser autorizada eventualmente.",
+      "O Posto de Comando deve ficar na zona estéril, para que o gerente tenha visão direta do ponto crítico.",
+      "Fora do perímetro tático interno a circulação é livre, inclusive para a imprensa.",
+      "O patrulhamento da zona tampão deve ser feito somente por policiais com perfil tático.",
+      "A doutrina fixa um tamanho padrão para os perímetros, a fim de facilitar o treinamento."],
+  c: 0, e: "Itens 2.10 e 4.1.1: o PC fica na zona tampão. A circulação só é livre fora do perímetro tático EXTERNO. Na zona tampão bastam policiais uniformizados e atentos, sem exigência de perfil tático. O tamanho e a forma dos perímetros variam caso a caso, a critério do gerente, e dependem principalmente do ponto crítico." },
+
+{ s: "O gerente efetivo pensa em tomar uma decisão que, embora legal, obrigaria seus comandados a praticar ações que causariam constrangimentos interna corporis. Qual critério de tomada de decisão estaria sendo violado?",
+  o: ["Necessidade.", "Validade do risco.", "Aceitabilidade legal.", "Aceitabilidade moral.", "Aceitabilidade ética."],
+  c: 4, e: "Item 3.3: a aceitabilidade ética determina que o resultado da decisão do gerente não pode exigir dos comandados ações que causem constrangimentos interna corporis. A aceitabilidade moral trata de moralidade e bons costumes." },
+
+{ s: "Antes de a CIOE chegar, o CEC propõe ao primeiro interventor libertar um refém em troca de uma garrafa de água. Segundo a apostila:",
+  o: ["o primeiro interventor pode aceitar, já que libertar um refém atende ao objetivo primordial de preservar vidas.",
+      "o primeiro interventor pode aceitar, desde que a entrega seja feita por um policial com colete balístico.",
+      "o primeiro interventor não deve conceder: a decisão sobre concessões cabe ao gerente efetivo e só deve ser conduzida com as alternativas táticas presentes no cenário.",
+      "o primeiro interventor deve consultar o CPU pelo CIODES, que, como gerente emergencial, pode autorizar a concessão.",
+      "o primeiro interventor deve recusar, mas pode oferecer outra coisa, como um refrigerante, para manter o vínculo."],
+  c: 2, e: "Item 3.3: “estabelecer contato sem concessões”. Entregar algo no ponto crítico expõe o primeiro interventor a risco, e a decisão de fazer ou não concessões cabe ao gerente efetivo, com as alternativas táticas no cenário. O PI também não deve oferecer nada nem fazer sugestões alternativas (5.2.5 e 5.2.11)." },
+
+{ s: "Sobre o tiro de comprometimento, analise as afirmativas:<ol type=\"I\"><li>Em um primeiro momento, a função do atirador policial de precisão é colher informações e observar o ponto crítico.</li><li>Depois da autorização do gerente efetivo, cabe ao gerente indicar o momento exato do disparo, em respeito à unidade de comando.</li><li>Pode ser executado em combinação com a negociação tática, quando os negociadores preparam o ambiente para a ação.</li><li>A avaliação do contexto deve considerar o polígono formado por treinamento, armamento, munição e equipamento.</li></ol>Estão corretas:",
+  o: ["I e II, apenas.", "II e IV, apenas.", "I, II e III, apenas.", "I, III e IV, apenas.", "I, II, III e IV."],
+  c: 3, e: "Item 3.6.3: o atirador só atua com autorização do gerente efetivo, mas, recebido o sinal verde, é ELE quem decide o momento de puxar o gatilho, e não o gerente. Por isso a afirmativa II está errada." },
+
+{ s: "Sobre a invasão tática, é correto afirmar que:",
+  o: ["por ser a quarta alternativa, só pode ser usada depois de esgotadas as três anteriores.",
+      "destina-se a salvar pessoas e é admitida quando o CEC cria risco substancial de causar ferimentos graves ou a morte do refém ou da vítima.",
+      "é executada por equipe diferente da que leva materiais ou retira pessoas do ponto crítico, para preservar o fator surpresa.",
+      "baseia-se em surpresa, rapidez e ação individual, privilegiando a iniciativa de cada operador.",
+      "é a alternativa de menor complexidade, porque encerra a crise de forma imediata."],
+  c: 1, e: "Item 3.6.4: a ordem das alternativas não é obrigatória; ela indica o risco, do menor para o maior. A equipe tática que invade é a mesma que leva materiais ou retira pessoas. Os princípios incluem ação de GRUPO e compromisso, e a invasão é a alternativa de MAIOR risco." },
+
+{ s: "Quanto às técnicas não letais, a apostila afirma que:",
+  o: ["obedecem aos princípios da legalidade, necessidade, proporcionalidade e conveniência e visam à imobilização do CEC, podendo causar desconforto ou até lesão.",
+      "visam à neutralização do CEC e não podem ser usadas quando houver chance de lesão.",
+      "são empregadas pela equipe de negociação como instrumento de pressão.",
+      "devem ser usadas antes da negociação, para reduzir a resistência do CEC.",
+      "por definição, não podem causar a morte do CEC nem de terceiros."],
+  c: 0, e: "Item 3.6.2: o objetivo é a imobilização, e não a neutralização. Se mal empregadas, podem causar até a morte. A essência é o uso quando a negociação falha, mas se quer manter o CEC vivo. Quem conjuga as armas não letais com as demais alternativas é o time tático." },
+
+{ s: "Sobre os fatores que podem causar perturbações mentais capazes de gerar crises (tipologia “mentalmente perturbado”), é correto afirmar:",
+  o: ["o abuso de drogas só conta como fator quando se trata de drogas ilícitas.",
+      "abalos emocionais súbitos não caracterizam essa tipologia; são próprios do CEC criminoso.",
+      "só transtornos mentais com classificação médica caracterizam essa tipologia.",
+      "tentativas de suicídio são raras nessa tipologia e mais comuns entre presos rebelados.",
+      "o uso contumaz de drogas é enquadrado como doença; por isso, o fator “abuso de drogas” se refere ao uso não rotineiro (circunstancial), proposital ou não, de drogas lícitas ou ilícitas."],
+  c: 4, e: "Item 3.5.2: são três fatores: transtornos mentais, abalos emocionais súbitos e abuso não rotineiro de drogas lícitas e ilícitas. O uso contumaz entra como doença. A apostila destaca que a tentativa de suicídio é muito comum nessa tipologia." },
+
+{ s: "Sobre as medidas operacionais do primeiro interventor, assinale a correta.",
+  o: ["Devem seguir rigorosamente a ordem apresentada, pois cada uma depende de a anterior estar concluída.",
+      "A doutrina atual mantém a sequência “conter, isolar e negociar”, e cabe ao primeiro interventor iniciar as barganhas.",
+      "Embora apresentadas em sequência, devem ser adotadas ao mesmo tempo sempre que possível. A antiga etapa “negociar” foi trocada por “estabelecer contato sem concessões”, porque negociar não é missão do primeiro interventor.",
+      "O apoio deve ser pedido diretamente às equipes especializadas, sem passar pelo CPU, para ganhar tempo.",
+      "Conter significa deixar o CEC se deslocar para um local mais seguro, desde que acompanhado pela polícia."],
+  c: 2, e: "Itens 5.1 e 5.1.5. O apoio é pedido via CIODES/COPOM, acionando o CPU (5.1.2). Conter é manter o CEC no local em que foi encontrado, pois a crise não pode mudar de lugar (5.1.3)." },
+
+{ s: "Durante o contato, o CEC pergunta ao primeiro interventor (um Soldado): “Qual é a sua patente?”. A conduta correta, segundo a apostila, é:",
+  o: ["mentir, dizendo ser oficial, para ganhar credibilidade.",
+      "não responder e mudar de assunto, porque a hierarquia cria barreiras psicológicas.",
+      "informar que é o negociador oficial da PM, para transmitir segurança.",
+      "dizer a verdade e, se o CEC exigir um superior, explicar que o superior não está no local e que ele é o responsável pela área, com a melhor intenção de ajudar.",
+      "dizer a verdade e chamar na hora o superior mais antigo presente para assumir o contato."],
+  c: 3, e: "Item 5.1.5, alíneas c e d: não é preciso dizer o posto ou a graduação ao se apresentar, mas, se o CEC perguntar, não se deve mentir. A apostila também critica a retirada de um primeiro interventor que esteja indo bem (5.1.2) e lembra que primeiro interventor em descrédito exige substituição (5.2.7)." },
+
+{ s: "Sobre o isolamento do ponto crítico, assinale a alternativa INCORRETA.",
+  o: ["Cortar a linha telefônica fixa é uma boa medida de isolamento preliminar.",
+      "A energia elétrica deve ser cortada sempre e de imediato, para impedir que o CEC acompanhe os noticiários.",
+      "Manter o CEC ocupado conversando com o primeiro interventor ajuda a evitar contatos paralelos pelo celular.",
+      "Quem insiste em falar com o CEC depois de receber ordem para se afastar pode responder por crime de desobediência.",
+      "Se o CEC pedir para conversar com uma pessoa específica, o primeiro interventor não deve trazê-la, porque não tem como avaliar se isso ajudará."],
+  c: 1, e: "Item 5.1.4: o corte de energia “só deve ser tomado se for analisado e tido como vantajoso para as ações policiais”. Não é uma medida automática." },
+
+{ s: "Sobre a Síndrome de Estocolmo, assinale a correta.",
+  o: ["O negociador deve tentar impedir que ela se desenvolva, pois dificulta o trabalho policial.",
+      "A troca de reféns é recomendada quando a síndrome já se estabeleceu, porque o novo refém herda a proteção psicológica.",
+      "Um sinal de que ela está se estabelecendo é o refém se recusar a atender o telefonema do policial.",
+      "A expressão foi criada pelo próprio assaltante, Jan-Erik Olsson, depois de se render.",
+      "Um de seus componentes é a relação positiva entre o policial negociador e o CEC, e o tempo é seu maior consolidador."],
+  c: 4, e: "Itens 5.2.3 e 5.2.13: o negociador deve tentar PERMITIR que a síndrome se desenvolva. A troca de reféns quebra a proteção psicológica que ela confere. Um dos sinais é justamente o refém ATENDER o telefonema do policial. O termo foi criado pelo Dr. Harvey Schlossberg." },
+
+{ s: "O CEC grita: “Quero um carro aqui em 10 minutos, senão mato alguém!”. Qual resposta do primeiro interventor segue melhor as ações básicas da apostila?",
+  o: ["“Não. Carro você não vai ter.”",
+      "“Tudo bem, só um minutinho que eu vou providenciar.”",
+      "“E se, em vez do carro, eu conseguir uma moto?”",
+      "“Entendi o que você está pedindo e anotei. Olha, é praticamente impossível conseguir um carro agora; espero que você entenda a minha situação e confie em mim.”",
+      "“Eu consigo o carro em 30 minutos, mas você precisa liberar alguém agora.”"],
+  c: 3, e: "Itens 5.1.3 (alínea j), 5.2.8 a 5.2.11: não dizer “não” diretamente, não usar expressões como “só um minutinho”, não estabelecer nem aceitar prazos, não fazer sugestões alternativas e não fazer concessões nem barganhas." },
+
+{ s: "Uma ocorrência começa como roubo com refém. Qual conjunto de sinais deve alertar os policiais para uma possível intenção suicida do CEC?",
+  o: ["Ele não exige nada para fugir, começa a fazer um “testamento oral” e fixa um prazo para a própria morte ou a do policial.",
+      "A voz fica mais baixa, ele fala de assuntos que não têm relação com a ocorrência e revela dados pessoais.",
+      "Ele liberta reféns, aceita o acordo sugerido e deixa prazos vencerem sem incidentes.",
+      "Ele exige um veículo para fugir, pede a presença da imprensa e ameaça os reféns.",
+      "A conversa passa de emocional para racional e ele se mostra disposto a falar com as autoridades."],
+  c: 0, e: "Item 6.1 traz os sinais de crise suicida. As alternativas B, C e E reúnem SINAIS DE PROGRESSO (item 5.4). A alternativa D descreve um CEC que pretende sobreviver e fugir." },
+
+{ s: "Entre as chaves para intervir em ocorrências com pessoas em crise suicida, a apostila recomenda:",
+  o: ["evitar falar sobre a morte, para não reforçar a ideação.",
+      "desviar a raiva da pessoa para terceiros, preservando o vínculo com o interventor.",
+      "falar abertamente sobre a irrevogabilidade da morte e pedir que a pessoa descreva como seria o suicídio.",
+      "não explorar os sentimentos da pessoa e focar só em soluções práticas.",
+      "apresentar o suicídio como opção inaceitável e moralmente condenável."],
+  c: 2, e: "Item 6.2: entre as chaves estão explorar continuamente os sentimentos, deixar a pessoa dirigir a raiva para VOCÊ, falar abertamente da irrevogabilidade da morte, fazer a pessoa descrever como seria o suicídio e mostrar que o suicídio é apenas uma das muitas alternativas." },
+
+{ s: "Um agressor solitário fez vítimas, mas agora está contido e isolado em uma sala, sem possibilidade de fazer novas vítimas. Segundo a apostila:",
+  o: ["deve-se entrar imediatamente, de forma rápida e direcionada, sem esperar as Unidades Especializadas.",
+      "a prioridade passa a ser a vida dos policiais e depois a do CEC, se possível. Deve-se evitar a entrada, contendo e aguardando as Unidades Especializadas; se for preciso entrar, a velocidade é lenta e progressiva.",
+      "a prioridade passa a ser a vida do CEC, por estar isolado, e depois a dos policiais.",
+      "continua prevalecendo a prioridade às vítimas, com entrada rápida, mesmo sem novas vítimas potenciais.",
+      "deve-se declarar zona vermelha em todo o perímetro e iniciar logo uma busca com frentes múltiplas."],
+  c: 1, e: "Capítulo 7: com o CEC contido e isolado, a ordem é policiais e depois o CEC, se possível, e a entrada deve ser evitada (se necessária, lenta e progressiva). Se ainda houver vítimas potenciais, a ordem é vítimas, policiais e CEC, com ação rápida e direcionada, sem esperar os especializados." }
+];
+
+const L = "ABCDE";
+const quiz = document.getElementById("quiz");
+const answers = new Array(Q.length).fill(null);
+let finished = false;
+
+Q.forEach((q, i) => {
+  const d = document.createElement("section");
+  d.className = "q"; d.id = "q" + i;
+  let h = `<h2>Questão ${i + 1}</h2><div class="stem">${q.s}</div>`;
+  q.o.forEach((t, j) => {
+    h += `<label class="opt" data-j="${j}"><input type="radio" name="r${i}" value="${j}"><span class="letter">${L[j]})</span><span>${t}</span></label>`;
+  });
+  h += `<div class="expl"></div>`;
+  d.innerHTML = h;
+  quiz.appendChild(d);
+  d.querySelectorAll("input").forEach(inp => inp.addEventListener("change", () => {
+    if (finished) return;
+    answers[i] = +inp.value;
+    d.querySelectorAll(".opt").forEach(o => o.classList.toggle("sel", +o.dataset.j === answers[i]));
+    update();
+  }));
+});
+
+const finishBtn = document.getElementById("finish");
+function update() {
+  const n = answers.filter(a => a !== null).length;
+  document.getElementById("count").textContent = `${n}/${Q.length} respondidas`;
+  document.getElementById("prog").style.width = (n / Q.length * 100) + "%";
+  finishBtn.disabled = n < Q.length;
+  document.getElementById("hint").textContent = n < Q.length
+    ? `Faltam ${Q.length - n} questão(ões) para liberar o gabarito.`
+    : "Tudo respondido. Clique em Finalizar para ver o gabarito.";
+}
+
+const t0 = Date.now(); let tick;
+function fmt(ms) { const s = Math.floor(ms / 1000); return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); }
+tick = setInterval(() => { document.getElementById("timer").textContent = "⏱ " + fmt(Date.now() - t0); }, 1000);
+
+finishBtn.addEventListener("click", () => {
+  if (answers.some(a => a === null)) return;
+  if (!confirm("Finalizar o simulado? As respostas não poderão mais ser alteradas.")) return;
+  finished = true; clearInterval(tick);
+  let ok = 0, rows1 = "", rows2 = "", rows3 = "";
+  Q.forEach((q, i) => {
+    const d = document.getElementById("q" + i);
+    const right = answers[i] === q.c; if (right) ok++;
+    d.classList.add("locked", right ? "res-ok" : "res-bad");
+    d.querySelectorAll("input").forEach(x => x.disabled = true);
+    d.querySelectorAll(".opt").forEach(o => {
+      const j = +o.dataset.j; o.classList.remove("sel");
+      if (j === q.c) o.classList.add("correct");
+      else if (j === answers[i]) o.classList.add("wrong");
+    });
+    d.querySelector(".expl").innerHTML =
+      `<span class="tag ${right ? "ok" : "bad"}">${right ? "✔ Acertou" : "✘ Errou"}</span> · Sua resposta: <strong>${L[answers[i]]}</strong> · Gabarito: <strong>${L[q.c]}</strong><br>${q.e}`;
+    rows1 += `<th>${i + 1}</th>`;
+    rows2 += `<td>${L[q.c]}</td>`;
+    rows3 += `<td class="${right ? "ok" : "bad"}">${L[answers[i]]}</td>`;
+  });
+  const pct = Math.round(ok / Q.length * 100);
+  const r = document.getElementById("result");
+  r.innerHTML = `<h2>Resultado</h2>
+    <div class="score">${ok}/${Q.length} (${pct}%)</div>
+    <div class="stat">Tempo: ${fmt(Date.now() - t0)} · ${pct >= 70 ? "Bom desempenho!" : "Revise os comentários de cada questão abaixo."}</div>
+    <div class="gab-wrap"><table>
+      <tr><th>Questão</th>${rows1}</tr>
+      <tr><th>Gabarito</th>${rows2}</tr>
+      <tr><th>Sua resposta</th>${rows3}</tr>
+    </table></div>`;
+  r.style.display = "block";
+  finishBtn.style.display = "none";
+  document.getElementById("restart").style.display = "inline-block";
+  document.getElementById("hint").textContent = `Resultado: ${ok}/${Q.length} acertos.`;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+document.getElementById("restart").addEventListener("click", () => location.reload());
+update();
+</script>
+</body>
+</html>
