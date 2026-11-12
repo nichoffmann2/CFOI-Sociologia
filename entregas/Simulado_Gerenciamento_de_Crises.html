@@ -67,7 +67,7 @@
     background: var(--accent); color: #fff; cursor: pointer;
   }
   @media (prefers-color-scheme: dark) { button { color: #0d1420; } }
-  button[disabled] { opacity: .45; cursor: not-allowed; }
+  button.pending { opacity: .55; }
   button.ghost { background: transparent; color: var(--accent); }
   #result { display: none; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px; margin-bottom: 20px; }
   #result h2 { margin: 0 0 6px; font-size: 1.2rem; }
@@ -105,7 +105,7 @@
     <span class="stat" id="hint">Responda todas as questões para finalizar.</span>
     <div>
       <button class="ghost" id="restart" type="button" style="display:none">Refazer</button>
-      <button id="finish" type="button" disabled>Finalizar simulado</button>
+      <button id="finish" type="button" class="pending">Finalizar simulado</button>
     </div>
   </div>
 </footer>
@@ -293,7 +293,8 @@ function update() {
   const n = answers.filter(a => a !== null).length;
   document.getElementById("count").textContent = `${n}/${Q.length} respondidas`;
   document.getElementById("prog").style.width = (n / Q.length * 100) + "%";
-  finishBtn.disabled = n < Q.length;
+  finishBtn.classList.toggle("pending", n < Q.length);
+  if (armed) return;
   document.getElementById("hint").textContent = n < Q.length
     ? `Faltam ${Q.length - n} questão(ões) para liberar o gabarito.`
     : "Tudo respondido. Clique em Finalizar para ver o gabarito.";
@@ -303,9 +304,21 @@ const t0 = Date.now(); let tick;
 function fmt(ms) { const s = Math.floor(ms / 1000); return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); }
 tick = setInterval(() => { document.getElementById("timer").textContent = "⏱ " + fmt(Date.now() - t0); }, 1000);
 
+let armed = false;
 finishBtn.addEventListener("click", () => {
-  if (answers.some(a => a === null)) return;
-  if (!confirm("Finalizar o simulado? As respostas não poderão mais ser alteradas.")) return;
+  if (finished) return;
+  const miss = answers.findIndex(a => a === null);
+  if (miss !== -1) {
+    document.getElementById("q" + miss).scrollIntoView({ behavior: "smooth", block: "center" });
+    document.getElementById("hint").textContent = `Ainda há ${answers.filter(a => a === null).length} questão(ões) sem resposta (levei você até a ${miss + 1}).`;
+    return;
+  }
+  if (!armed) {
+    armed = true;
+    finishBtn.textContent = "Confirmar e ver gabarito";
+    document.getElementById("hint").textContent = "Clique de novo para confirmar. Depois disso as respostas ficam travadas.";
+    return;
+  }
   finished = true; clearInterval(tick);
   let ok = 0, rows1 = "", rows2 = "", rows3 = "";
   Q.forEach((q, i) => {
